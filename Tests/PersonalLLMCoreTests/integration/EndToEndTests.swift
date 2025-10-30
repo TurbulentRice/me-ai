@@ -21,8 +21,8 @@ final class EndToEndTests: XCTestCase {
         embedder = MockEmbedder(dimension: 384)
         llm = MockLLM(delay: .milliseconds(10))
 
-        // Load the mock LLM
-        try await llm.load(modelPath: URL(fileURLWithPath: "/tmp/mock_model"))
+        // Load the mock LLM with default config
+        try await llm.load(modelPath: URL(fileURLWithPath: "/tmp/mock_model"), config: .default)
 
         ragEngine = RAGEngine(
             embedder: embedder,
