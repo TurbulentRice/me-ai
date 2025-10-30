@@ -12,7 +12,6 @@ echo "Running tests for PersonalLLM..."
 xcodebuild test \
     -project PersonalLLM.xcodeproj \
     -scheme PersonalLLM \
-    -destination 'platform=iOS Simulator,name=iPhone 15' \
-    | xcpretty || true
+    -destination 'platform=iOS Simulator,name=iPhone 17'
 
 echo "✓ Tests complete!"

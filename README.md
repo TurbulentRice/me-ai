@@ -50,7 +50,7 @@ cd personal-ai
 2. **Install dependencies**
 ```bash
 # Install XcodeGen and build tools
-brew install xcodegen xcpretty
+brew install xcodegen
 
 # Install Python dependencies and MLC-LLM
 ./scripts/setup_environment.sh

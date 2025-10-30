@@ -12,8 +12,7 @@ echo "Building PersonalLLM for iOS Simulator..."
 xcodebuild build \
     -project PersonalLLM.xcodeproj \
     -scheme PersonalLLM \
-    -destination 'platform=iOS Simulator,name=iPhone 15' \
-    -configuration Debug \
-    | xcpretty || true
+    -destination 'platform=iOS Simulator,name=iPhone 17' \
+    -configuration Debug
 
 echo "✓ Build complete!"

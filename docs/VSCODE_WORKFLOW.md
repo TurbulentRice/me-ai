@@ -88,9 +88,6 @@ xcode-select --install
 
 # Install XcodeGen (generates Xcode project from project.yml)
 brew install xcodegen
-
-# Optional: Install xcpretty for prettier build output
-brew install xcpretty
 ```
 
 ### 2. Clone and Setup Project
@@ -179,7 +176,7 @@ rm -rf .build DerivedData *.xcodeproj *.xcworkspace
 
 # Build and run on simulator (requires Xcode project)
 xcodebuild build -project PersonalLLM.xcodeproj -scheme PersonalLLM \
-  -destination 'platform=iOS Simulator,name=iPhone 15'
+  -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
 ---

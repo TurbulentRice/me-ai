@@ -89,7 +89,6 @@ All scripts are executable and tested:
 **`scripts/build.sh`**
 - Generates Xcode project if needed
 - Builds iOS app for simulator
-- Pretty output with xcpretty
 
 **`scripts/test.sh`**
 - Runs all tests

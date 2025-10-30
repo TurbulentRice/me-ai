@@ -445,7 +445,7 @@ git add tests/unit/VectorDatabaseTests.swift
 git commit -m "Add unit tests for vector database operations"
 
 # Run tests
-xcodebuild test -scheme PersonalLLM -destination 'platform=iOS Simulator,name=iPhone 15'
+xcodebuild test -scheme PersonalLLM -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
 ### Phase 1 Definition of Done
@@ -1012,7 +1012,7 @@ git add tests/integration/RAGEngineTests.swift
 git commit -m "Add end-to-end RAG pipeline tests"
 
 # Run integration tests
-xcodebuild test -scheme PersonalLLM -destination 'platform=iOS Simulator,name=iPhone 15'
+xcodebuild test -scheme PersonalLLM -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
 ### Phase 3 Definition of Done
@@ -1658,7 +1658,7 @@ instruments -t "Leaks" PersonalLLM.app
 cat > docs/PERFORMANCE.md << 'EOF'
 # Performance Metrics
 
-## Measured on iPhone 15 Pro (A17 Pro)
+## Measured on iPhone 17 Pro (A17 Pro)
 
 | Metric | Target | Actual | Status |
 |--------|--------|--------|--------|
@@ -1675,7 +1675,7 @@ Create comprehensive test plan and execute:
 
 ```bash
 # Run all tests
-xcodebuild test -scheme PersonalLLM -destination 'platform=iOS Simulator,name=iPhone 15'
+xcodebuild test -scheme PersonalLLM -destination 'platform=iOS Simulator,name=iPhone 17'
 
 # Run on physical device
 xcodebuild test -scheme PersonalLLM -destination 'platform=iOS,name=Your iPhone'
