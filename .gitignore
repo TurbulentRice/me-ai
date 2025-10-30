@@ -1,0 +1,28 @@
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.xccheckout
+*.moved-aside
+
+# Models (too large for git)
+Models/**/*.gguf
+Models/**/*.mlc
+*.bin
+*.safetensors
+
+# Build
+build/
+*.ipa
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Secrets
+*.env
+secrets/
