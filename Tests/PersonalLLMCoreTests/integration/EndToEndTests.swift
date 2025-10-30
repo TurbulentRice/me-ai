@@ -21,19 +21,10 @@ final class EndToEndTests: XCTestCase {
         embedder = MockEmbedder(dimension: 384)
         llm = MockLLM(delay: .milliseconds(10))
 
-        let config = RAGConfiguration(
-            topK: 3,
-            chunkSize: 512,
-            chunkOverlap: 50,
-            maxContextTokens: 2048,
-            systemPrompt: "You are a helpful assistant."
-        )
-
         ragEngine = RAGEngine(
-            database: database,
             embedder: embedder,
-            llm: llm,
-            config: config
+            database: database,
+            llm: llm
         )
 
         documentManager = DocumentManager(
@@ -102,7 +93,7 @@ final class EndToEndTests: XCTestCase {
         Python has a clean syntax and extensive library support.
         """
 
-        let doc1 = try await documentManager.ingestText(
+        _ = try await documentManager.ingestText(
             doc1Content,
             filename: "python.txt"
         )
@@ -114,7 +105,7 @@ final class EndToEndTests: XCTestCase {
         Node.js brings JavaScript to server-side development.
         """
 
-        let doc2 = try await documentManager.ingestText(
+        _ = try await documentManager.ingestText(
             doc2Content,
             filename: "javascript.txt"
         )
@@ -205,9 +196,9 @@ final class EndToEndTests: XCTestCase {
         async let query2 = ragEngine.answer(query: "What is Machine Learning?")
         async let query3 = ragEngine.answer(query: "What is Deep Learning?")
 
-        let (stream1, citations1) = await query1
-        let (stream2, citations2) = await query2
-        let (stream3, citations3) = await query3
+        let (stream1, citations1) = try await query1
+        let (stream2, citations2) = try await query2
+        let (stream3, citations3) = try await query3
 
         // Consume streams
         var response1 = ""
