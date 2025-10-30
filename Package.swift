@@ -33,6 +33,10 @@ let package = Package(
             path: "Sources/PersonalLLMCore",
             resources: [
                 .process("Resources")
+            ],
+            linkerSettings: [
+                .linkedFramework("Security"),
+                .linkedFramework("CryptoKit", .when(platforms: [.iOS, .macOS]))
             ]
         ),
 
