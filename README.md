@@ -23,7 +23,7 @@ Personal AI enables you to:
 - **Local Inference**: Core ML runtime for iOS, ExecuTorch for Android
 - **Local RAG**: Embed and search your documents without cloud services
 - **Privacy First**: No external network requests, no analytics, no telemetry
-- **Encrypted Storage**: AES-XChaCha20 encryption at rest, OS keychain management
+- **Encrypted Storage**: AES-GCM encryption at rest, iOS Keychain management
 - **Streaming Chat**: Real-time responses with source citations
 - **Full Control**: Complete data deletion and export capabilities
 
@@ -126,7 +126,7 @@ See [docs/SPECIFICATION.md](docs/SPECIFICATION.md) for detailed architecture and
 | `Documents/models/` | Local model files (GGUF/Core ML) |
 | `Documents/cache/` | Temporary embeddings and logs |
 
-All data encrypted via SQLCipher with keys in iOS Keychain.
+All sensitive data encrypted with AES-GCM-256, keys stored in iOS Keychain.
 
 ---
 
@@ -172,6 +172,17 @@ personal-ai/
 - [VSCODE_WORKFLOW.md](docs/VSCODE_WORKFLOW.md) - **VSCode/Cursor development guide** (start here!)
 - [PROTOTYPE.md](docs/PROTOTYPE.md) - Original design document and system architecture
 - [PROTOTYPE_IMPLEMENTATION_PLAN.md](docs/PROTOTYPE_IMPLEMENTATION_PLAN.md) - Phased implementation guide
+- [PERFORMANCE.md](docs/PERFORMANCE.md) - Performance benchmarks and optimization notes
+- [PHASE_*_COMPLETION.md](docs/) - Detailed completion docs for each phase
+
+### Phase Completion Status
+- ✅ **Phase 0**: Project Setup & Infrastructure
+- ✅ **Phase 1**: Storage Layer & Data Models (11 tests)
+- ✅ **Phase 2**: Model Runtime Integration (13 tests)
+- ✅ **Phase 3**: RAG Engine Implementation (14 tests)
+- ✅ **Phase 4**: UI Layer & Chat Interface
+- ✅ **Phase 5**: Privacy & Security (10 tests)
+- 🚧 **Phase 6**: Testing, Polish & Documentation (in progress)
 
 ---
 
@@ -179,8 +190,10 @@ personal-ai/
 
 - **No cloud calls**: All processing happens on-device
 - **No telemetry**: Zero analytics or tracking
-- **Encrypted at rest**: All data encrypted with AES-XChaCha20
-- **User control**: Full data deletion and export tools in settings
+- **Encrypted at rest**: Chunk text encrypted with AES-GCM-256
+- **Secure keys**: Encryption keys stored in iOS Keychain
+- **User control**: Full data deletion and secure erase capabilities
+- **Test coverage**: 50 unit tests, 9 integration tests, all passing ✅
 
 ---
 
@@ -197,6 +210,7 @@ MIT License (to be confirmed before release)
 
 ---
 
-**Version**: 0.1.0 - Phase 0 Complete (SPM Structure)
+**Version**: 0.1.0 - P0 Prototype (Phases 0-5 Complete)
 **Author**: Sean Russell
 **Updated**: 2025-10-30
+**Status**: ✅ Core features complete, Phase 6 testing in progress
