@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "sswg.swift-lang",
+    "vknabel.vscode-swift-development-environment",
+    "github.copilot",
+    "tamasfe.even-better-toml",
+    "yzhang.markdown-all-in-one",
+    "ms-python.python"
+  ]
+}

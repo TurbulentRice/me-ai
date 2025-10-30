@@ -1,0 +1,61 @@
+name: PersonalLLM
+options:
+  bundleIdPrefix: com.seanrussell
+  deploymentTarget:
+    iOS: 17.0
+
+packages:
+  PersonalLLMCore:
+    path: .
+
+targets:
+  PersonalLLM:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - App/PersonalLLM
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.seanrussell.personalllm
+        INFOPLIST_FILE: App/PersonalLLM/Info.plist
+        DEVELOPMENT_TEAM: "" # Set your team ID here when needed
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2" # iPhone and iPad
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        SWIFT_VERSION: "5.9"
+        ENABLE_PREVIEWS: YES
+    dependencies:
+      - package: PersonalLLMCore
+        product: PersonalLLMCore
+    scheme:
+      testTargets:
+        - PersonalLLMTests
+
+  PersonalLLMTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - Tests/PersonalLLMCoreTests
+    dependencies:
+      - target: PersonalLLM
+      - package: PersonalLLMCore
+        product: PersonalLLMCore
+
+schemes:
+  PersonalLLM:
+    build:
+      targets:
+        PersonalLLM: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - PersonalLLMTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

@@ -4,7 +4,7 @@
 **Author**: Sean Russell
 **Date**: 2025-10-29
 
-This document provides a phased, actionable implementation plan for building the Diane AI mobile prototype (P0), based on the architecture defined in [PROTOTYPE.md](PROTOTYPE.md).
+This document provides a phased, actionable implementation plan for building the Personal AI mobile prototype (P0), based on the architecture defined in [PROTOTYPE.md](PROTOTYPE.md).
 
 ---
 
@@ -135,7 +135,7 @@ cat > scripts/setup_environment.sh << 'EOF'
 #!/bin/bash
 set -e
 
-echo "Setting up Diane AI development environment..."
+echo "Setting up Personal AI development environment..."
 
 # Check macOS version
 if [[ $(sw_vers -productVersion | cut -d. -f1) -lt 14 ]]; then

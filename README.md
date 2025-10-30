@@ -4,13 +4,13 @@
 
 Private, local AI — your data, your model, your device.
 
-Diane AI is a mobile-first personal LLM that performs local inference and retrieval-augmented generation (RAG) entirely on-device, with no cloud dependencies.
+Personal AI is a mobile-first personal LLM that performs local inference and retrieval-augmented generation (RAG) entirely on-device, with no cloud dependencies.
 
 ---
 
 ## Overview
 
-Diane AI enables you to:
+Personal AI enables you to:
 - Chat with an AI assistant powered by on-device open-source models (Phi-3 Mini, Gemma 2B)
 - Index and retrieve your local files for contextual, grounded responses
 - Maintain complete privacy — all ML and data storage stay local
@@ -33,51 +33,64 @@ Diane AI enables you to:
 
 ### Requirements
 - macOS 14.4+
-- Xcode 15+
+- Xcode 15+ (command line tools required, minimal GUI usage)
+- VSCode or Cursor (recommended for development)
 - iOS 17+ device (A15 chip or newer recommended)
 - Python 3.10+ (for model utilities)
+- Homebrew package manager
 
 ### Setup
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourname/diane-ai.git
-cd diane-ai
+git clone https://github.com/TurbulentRice/personal-ai.git
+cd personal-ai
 ```
 
-2. **Prepare models**
-
-Create model directory and download Phi-3 Mini:
+2. **Install dependencies**
 ```bash
-mkdir -p Models/Phi3Mini
-cd Models/Phi3Mini
-curl -O https://huggingface.co/mlc-ai/mlc-phi3-mini-128k-instruct-q4/resolve/main/model-q4.gguf
+# Install XcodeGen and build tools
+brew install xcodegen xcpretty
+
+# Install Python dependencies and MLC-LLM
+./scripts/setup_environment.sh
+
+# Generate Xcode project
+./scripts/generate_xcode.sh
 ```
 
-3. **Build MLC runtime**
-
-Install dependencies:
+3. **Prepare models** (optional - can do later)
 ```bash
-brew install cmake llvm libomp
-pip install mlc-ai-nightly
+./scripts/download_models.sh
 ```
-
-Compile model for iOS:
-```bash
-mlc_llm compile phi3-mini-128k-instruct-q4 \
-  --target=iphone \
-  --quantization=q4 \
-  --use-prebuilt
-```
-
-Place the resulting bundle under `/Models/Phi3Mini/model.mlc`
 
 4. **Build and run**
+
+**Using VSCode/Cursor (recommended):**
 ```bash
-open ios/PersonalLLM.xcodeproj
+code .  # or: cursor .
+# Press Cmd+Shift+B to build
+# Or run: ./scripts/build.sh
 ```
 
-In Xcode, select your development team and build to a real device.
+**Using Xcode (for simulator/device):**
+```bash
+open PersonalLLM.xcodeproj
+# Press Cmd+R to run on simulator
+```
+
+---
+
+## Development Workflow
+
+This project uses **Swift Package Manager** with **XcodeGen** for a VSCode/Cursor-first development experience:
+
+- **Write code** in VSCode/Cursor with full AI assistance
+- **Build from CLI** using `./scripts/build.sh`
+- **Run tests** using `./scripts/test.sh`
+- **Use Xcode minimally** (only for device deployment and debugging)
+
+See [docs/VSCODE_WORKFLOW.md](docs/VSCODE_WORKFLOW.md) for detailed VSCode development guide.
 
 ---
 
@@ -140,22 +153,25 @@ All data encrypted via SQLCipher with keys in iOS Keychain.
 
 ### Project Structure
 ```
-/ios
-  ├── PersonalLLM.xcodeproj
-  ├── Sources/
-  │   ├── UI/
-  │   ├── Engine/
-  │   ├── ModelRuntime/
-  │   └── Storage/
-  └── Assets/
-      └── Models/
+personal-ai/
+├── Package.swift              # Swift Package Manager manifest
+├── project.yml                # XcodeGen configuration
+├── App/PersonalLLM/          # iOS app target
+├── Sources/PersonalLLMCore/  # Shared library
+│   ├── UI/                   # SwiftUI views
+│   ├── Engine/               # RAG engine
+│   ├── ModelRuntime/         # LLM runtime
+│   ├── Storage/              # Vector DB
+│   └── Privacy/              # Encryption
+├── Tests/                    # Unit & integration tests
+├── Models/                   # ML models (gitignored)
+└── scripts/                  # Build scripts
 ```
 
 ### Documentation
+- [VSCODE_WORKFLOW.md](docs/VSCODE_WORKFLOW.md) - **VSCode/Cursor development guide** (start here!)
 - [PROTOTYPE.md](docs/PROTOTYPE.md) - Original design document and system architecture
-- [PROTOTYPE_IMPLEMENTATION_PLAN.md](docs/PROTOTYPE_IMPLEMENTATION_PLAN.md) - Phased implementation guide with git workflow
-- [SPECIFICATION.md](docs/SPECIFICATION.md) - Detailed architecture, protocols, and implementation plan
-- [API.md](docs/API.md) - Interface definitions (coming soon)
+- [PROTOTYPE_IMPLEMENTATION_PLAN.md](docs/PROTOTYPE_IMPLEMENTATION_PLAN.md) - Phased implementation guide
 
 ---
 
@@ -181,6 +197,6 @@ MIT License (to be confirmed before release)
 
 ---
 
-**Version**: 0.1.0 - Mobile Prototype
+**Version**: 0.1.0 - Phase 0 Complete (SPM Structure)
 **Author**: Sean Russell
-**Updated**: 2025-10-29
+**Updated**: 2025-10-30

@@ -1,0 +1,30 @@
+{
+  "files.exclude": {
+    "**/.build": true,
+    "**/.swiftpm": true,
+    "**/DerivedData": true,
+    "**/*.xcodeproj": true,
+    "**/*.xcworkspace": true
+  },
+  "search.exclude": {
+    "**/.build": true,
+    "**/.swiftpm": true,
+    "**/DerivedData": true,
+    "**/Models/**/*.gguf": true,
+    "**/Models/**/*.mlc": true
+  },
+  "files.watcherExclude": {
+    "**/.build/**": true,
+    "**/.swiftpm/**": true,
+    "**/DerivedData/**": true,
+    "**/Models/**": true
+  },
+  "[swift]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true
+  },
+  "swift.path": "/usr/bin/swift",
+  "swift.buildPath": ".build",
+  "sourcekit-lsp.serverPath": "/usr/bin/sourcekit-lsp"
+}
