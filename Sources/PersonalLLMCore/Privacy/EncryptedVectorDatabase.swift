@@ -18,13 +18,17 @@ public final class EncryptedVectorDatabase: VectorDatabase {
     /// - Parameter dbPath: Path to database file
     /// - Throws: Storage or encryption errors
     public convenience init(dbPath: URL) throws {
-        // Ensure the database is in a protected location
-        try FileManager.default.setAttributes(
-            [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
-            ofItemAtPath: dbPath.path
-        )
-
+        // Create the database first
         let db = try SQLiteVectorDB(dbPath: dbPath)
+
+        // Set file protection if the file exists
+        if FileManager.default.fileExists(atPath: dbPath.path) {
+            try? FileManager.default.setAttributes(
+                [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                ofItemAtPath: dbPath.path
+            )
+        }
+
         try self.init(database: db)
     }
 
