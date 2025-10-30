@@ -72,6 +72,28 @@
         "panel": "new"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Open App in Xcode",
+      "type": "shell",
+      "command": "./scripts/run.sh",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Verify Development Setup",
+      "type": "shell",
+      "command": "./scripts/verify_setup.sh",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
     }
   ]
 }
