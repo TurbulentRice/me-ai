@@ -2,9 +2,14 @@
 
 **Version**: 0.1.0
 **Author**: Sean Russell
-**Date**: 2025-10-29
+**Date**: 2025-10-29 (Updated: 2025-10-30)
 
 This document provides a phased, actionable implementation plan for building the Personal AI mobile prototype (P0), based on the architecture defined in [PROTOTYPE.md](PROTOTYPE.md).
+
+> **📝 IMPORTANT UPDATE (2025-10-30):** Phase 0 has been completed using **Swift Package Manager** with **XcodeGen** for a VSCode/Cursor-first workflow. The original plan assumed traditional Xcode project structure, but we've pivoted to a more AI-friendly development approach. See [VSCODE_WORKFLOW.md](VSCODE_WORKFLOW.md) for the complete development guide. All subsequent phases should follow the SPM structure:
+> - Create files in `Sources/PersonalLLMCore/<Module>/`
+> - Use CLI build scripts instead of opening Xcode
+> - See Phase 0 actual implementation below for the modern approach
 
 ---
 
