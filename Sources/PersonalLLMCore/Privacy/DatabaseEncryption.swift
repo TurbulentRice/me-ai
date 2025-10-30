@@ -2,7 +2,7 @@ import Foundation
 import CryptoKit
 
 /// Provides encryption/decryption for sensitive database fields using AES-GCM
-public final class DatabaseEncryption {
+public final class DatabaseEncryption: Sendable {
     private let symmetricKey: SymmetricKey
 
     /// Initialize with encryption key from Keychain
