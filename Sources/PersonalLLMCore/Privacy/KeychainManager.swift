@@ -51,7 +51,7 @@ public final class KeychainManager {
         var bytes = [UInt8](repeating: 0, count: length)
         let status = SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
 
-        guard status == errSecSuccess else {
+        if status != errSecSuccess {
             // Fallback to less secure random generation if SecRandom fails
             bytes = (0..<length).map { _ in UInt8.random(in: 0...255) }
         }
