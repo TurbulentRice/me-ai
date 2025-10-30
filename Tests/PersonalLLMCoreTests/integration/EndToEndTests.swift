@@ -69,8 +69,7 @@ final class EndToEndTests: XCTestCase {
 
         let document = try await documentManager.ingestText(
             documentContent,
-            filename: "swift_intro.txt",
-            mimeType: "text/plain"
+            filename: "swift_intro.txt"
         )
 
         XCTAssertGreaterThan(document.id, 0, "Document should be inserted")
@@ -80,7 +79,7 @@ final class EndToEndTests: XCTestCase {
         let query = "What is Swift?"
 
         // Step 3 & 4: System generates answer with citations
-        let (stream, citations) = try await ragEngine.answerQuery(query)
+        let (stream, citations) = try await ragEngine.answer(query: query)
 
         var fullResponse = ""
         for await token in stream {
@@ -105,8 +104,7 @@ final class EndToEndTests: XCTestCase {
 
         let doc1 = try await documentManager.ingestText(
             doc1Content,
-            filename: "python.txt",
-            mimeType: "text/plain"
+            filename: "python.txt"
         )
 
         // Ingest second document
@@ -118,8 +116,7 @@ final class EndToEndTests: XCTestCase {
 
         let doc2 = try await documentManager.ingestText(
             doc2Content,
-            filename: "javascript.txt",
-            mimeType: "text/plain"
+            filename: "javascript.txt"
         )
 
         // Verify both documents exist
@@ -127,7 +124,7 @@ final class EndToEndTests: XCTestCase {
         XCTAssertEqual(allDocs.count, 2, "Should have 2 documents")
 
         // Query should retrieve relevant context from both
-        let (stream, citations) = try await ragEngine.answerQuery("What programming languages are discussed?")
+        let (stream, citations) = try await ragEngine.answer(query: "What programming languages are discussed?")
 
         var response = ""
         for await token in stream {
@@ -147,8 +144,7 @@ final class EndToEndTests: XCTestCase {
         let content = "This is a test document that will be deleted."
         let doc = try await documentManager.ingestText(
             content,
-            filename: "temp.txt",
-            mimeType: "text/plain"
+            filename: "temp.txt"
         )
 
         // Verify document exists
@@ -171,7 +167,7 @@ final class EndToEndTests: XCTestCase {
         // Test system behavior with invalid inputs
 
         // Try to query empty database
-        let (stream, citations) = try await ragEngine.answerQuery("What is in the database?")
+        let (stream, citations) = try await ragEngine.answer(query: "What is in the database?")
 
         var response = ""
         for await token in stream {
@@ -201,18 +197,17 @@ final class EndToEndTests: XCTestCase {
 
         _ = try await documentManager.ingestText(
             content,
-            filename: "ai_concepts.txt",
-            mimeType: "text/plain"
+            filename: "ai_concepts.txt"
         )
 
         // Run multiple queries concurrently
-        async let query1 = ragEngine.answerQuery("What is AI?")
-        async let query2 = ragEngine.answerQuery("What is Machine Learning?")
-        async let query3 = ragEngine.answerQuery("What is Deep Learning?")
+        async let query1 = ragEngine.answer(query: "What is AI?")
+        async let query2 = ragEngine.answer(query: "What is Machine Learning?")
+        async let query3 = ragEngine.answer(query: "What is Deep Learning?")
 
-        let (stream1, citations1) = try await query1
-        let (stream2, citations2) = try await query2
-        let (stream3, citations3) = try await query3
+        let (stream1, citations1) = await query1
+        let (stream2, citations2) = await query2
+        let (stream3, citations3) = await query3
 
         // Consume streams
         var response1 = ""
@@ -249,8 +244,7 @@ final class EndToEndTests: XCTestCase {
 
         let doc = try await documentManager.ingestText(
             largeContent,
-            filename: "large_doc.txt",
-            mimeType: "text/plain"
+            filename: "large_doc.txt"
         )
 
         // Verify multiple chunks were created
@@ -258,7 +252,7 @@ final class EndToEndTests: XCTestCase {
 
         // Query should still work efficiently
         let startTime = Date()
-        let (stream, citations) = try await ragEngine.answerQuery("What is in the document?")
+        let (stream, citations) = try await ragEngine.answer(query: "What is in the document?")
 
         var response = ""
         for await token in stream {
@@ -282,12 +276,11 @@ final class EndToEndTests: XCTestCase {
         let content = "This is a test document for streaming."
         _ = try await documentManager.ingestText(
             content,
-            filename: "stream_test.txt",
-            mimeType: "text/plain"
+            filename: "stream_test.txt"
         )
 
         // Query and collect tokens with timestamps
-        let (stream, _) = try await ragEngine.answerQuery("What is this?")
+        let (stream, _) = try await ragEngine.answer(query: "What is this?")
 
         var tokens: [String] = []
         var receivedTokenCount = 0
@@ -317,8 +310,7 @@ final class EndToEndTests: XCTestCase {
         let content = "Swift is a programming language for iOS development."
         _ = try await documentManager.ingestText(
             content,
-            filename: "perf_test.txt",
-            mimeType: "text/plain"
+            filename: "perf_test.txt"
         )
 
         // Measure query time
@@ -326,7 +318,7 @@ final class EndToEndTests: XCTestCase {
             let expectation = self.expectation(description: "Query completes")
 
             Task {
-                let (stream, _) = try await self.ragEngine.answerQuery("What is Swift?")
+                let (stream, _) = try await self.ragEngine.answer(query: "What is Swift?")
                 var response = ""
                 for await token in stream {
                     response += token
@@ -349,8 +341,7 @@ final class EndToEndTests: XCTestCase {
             Task {
                 _ = try await self.documentManager.ingestText(
                     content,
-                    filename: "perf_\(UUID().uuidString).txt",
-                    mimeType: "text/plain"
+                    filename: "perf_\(UUID().uuidString).txt"
                 )
                 expectation.fulfill()
             }
