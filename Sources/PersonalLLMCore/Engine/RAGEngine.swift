@@ -59,7 +59,12 @@ public final class RAGEngine: Sendable {
             )
         }
 
-        // 5. Build prompt
+        // 5. Check if LLM is loaded
+        guard await llm.isLoaded else {
+            throw RAGError.generationFailed("LLM model is still loading. Please wait a moment and try again.")
+        }
+
+        // 6. Build prompt
         let prompt = buildPrompt(
             query: query,
             context: context,
@@ -67,7 +72,7 @@ public final class RAGEngine: Sendable {
             systemPrompt: systemPrompt
         )
 
-        // 6. Generate response
+        // 7. Generate response
         let stream = try await llm.generate(
             prompt: prompt,
             stopSequences: config.stopSequences,

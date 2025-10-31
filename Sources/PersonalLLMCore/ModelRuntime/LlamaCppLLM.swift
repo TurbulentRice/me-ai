@@ -57,22 +57,22 @@ public final class LlamaCppLLM: LocalLLM {
 
         return AsyncStream { continuation in
             Task {
-                // Create Prompt object with proper parameters for Phi-3
-                let llamaPrompt = Prompt(
-                    type: .phi,
-                    systemPrompt: "You are a helpful AI assistant.",
-                    userMessage: prompt,
-                    history: []
-                )
-
-                // Get streaming sequence from SwiftLlama
-                // Use await to cross the actor boundary
-                let sequence: AsyncThrowingStream<String, Error> = await llama.start(for: llamaPrompt)
-
-                var tokenCount = 0
-                var generatedText = ""
-
                 do {
+                    // Create Prompt object with proper parameters for Phi-3
+                    let llamaPrompt = Prompt(
+                        type: .phi,
+                        systemPrompt: "You are a helpful AI assistant.",
+                        userMessage: prompt,
+                        history: []
+                    )
+
+                    // Get streaming sequence from SwiftLlama
+                    // Use await to cross the actor boundary
+                    let sequence: AsyncThrowingStream<String, Error> = await llama.start(for: llamaPrompt)
+
+                    var tokenCount = 0
+                    var generatedText = ""
+
                     for try await token in sequence {
                         // Check max tokens limit
                         guard tokenCount < maxTokens else {
@@ -105,6 +105,7 @@ public final class LlamaCppLLM: LocalLLM {
                     continuation.finish()
                 } catch {
                     print("❌ Generation error: \(error)")
+                    print("   This may indicate the model is not fully loaded or there's a tokenizer issue")
                     continuation.finish()
                 }
             }
