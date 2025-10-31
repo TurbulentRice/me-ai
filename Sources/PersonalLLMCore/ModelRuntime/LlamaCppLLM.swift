@@ -23,12 +23,29 @@ public final class LlamaCppLLM: LocalLLM {
             throw ModelRuntimeError.modelNotFound(modelPath.path)
         }
 
+        // Check file size to ensure it's not empty/corrupted
+        let attributes = try FileManager.default.attributesOfItem(atPath: modelPath.path)
+        let fileSize = attributes[.size] as? Int64 ?? 0
+        print("📊 Model file size: \(fileSize / 1_000_000) MB")
+
+        guard fileSize > 100_000_000 else { // At least 100MB
+            throw ModelRuntimeError.modelLoadFailed("Model file appears corrupted or too small")
+        }
+
         // Initialize SwiftLlama
+        print("🔄 Initializing SwiftLlama...")
         do {
             self.llama = try SwiftLlama(modelPath: modelPath.path)
             self.config = config
+            print("✅ SwiftLlama initialized successfully")
         } catch {
+            print("❌ SwiftLlama initialization failed: \(error)")
             throw ModelRuntimeError.modelLoadFailed(error.localizedDescription)
+        }
+
+        // Verify the model is actually usable by checking if we can access it
+        guard self.llama != nil else {
+            throw ModelRuntimeError.modelLoadFailed("SwiftLlama object is nil after initialization")
         }
 
         // Store model info
@@ -42,7 +59,12 @@ public final class LlamaCppLLM: LocalLLM {
 
         print("✅ SwiftLlama model loaded")
         print("   Model: \(modelPath.lastPathComponent)")
+        print("   Model path: \(modelPath.path)")
         print("   Context length: \(config.contextLength)")
+
+        #if targetEnvironment(simulator)
+        print("⚠️  Running in simulator - llama.cpp may have limited functionality")
+        #endif
     }
 
     public func generate(
@@ -58,6 +80,9 @@ public final class LlamaCppLLM: LocalLLM {
         return AsyncStream { continuation in
             Task {
                 do {
+                    print("🔄 Starting generation...")
+                    print("   Prompt length: \(prompt.count) chars")
+
                     // Create Prompt object with proper parameters for Phi-3
                     let llamaPrompt = Prompt(
                         type: .phi,
@@ -65,10 +90,13 @@ public final class LlamaCppLLM: LocalLLM {
                         userMessage: prompt,
                         history: []
                     )
+                    print("✅ Prompt object created")
 
                     // Get streaming sequence from SwiftLlama
                     // Use await to cross the actor boundary
+                    print("🔄 Calling SwiftLlama.start()...")
                     let sequence: AsyncThrowingStream<String, Error> = await llama.start(for: llamaPrompt)
+                    print("✅ Got streaming sequence")
 
                     var tokenCount = 0
                     var generatedText = ""

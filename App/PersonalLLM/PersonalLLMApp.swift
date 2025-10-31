@@ -27,10 +27,17 @@ struct PersonalLLMApp: App {
             print("⚠️  CoreML model not found, using MockEmbedder")
         }
 
-        // Create LLM - try bundled model first, then Documents, fall back to mock
+        // Create LLM - use MockLLM in simulator (llama.cpp doesn't work there)
         let llm: LocalLLM
         var modelPath: URL?
 
+        #if targetEnvironment(simulator)
+        // Use MockLLM in simulator - llama.cpp tokenizer crashes in simulator
+        llm = MockLLM(delay: .milliseconds(50))
+        print("⚠️  Running in simulator")
+        print("⚠️  Using MockLLM (llama.cpp doesn't support iOS simulator)")
+        print("⚠️  Build and run on a real device to test Phi-3")
+        #else
         // Try to find the model in this order:
         // 1. Bundled with app (for production)
         if let bundledModelPath = Bundle.main.url(forResource: "phi3-mini-128k-q4", withExtension: "gguf") {
@@ -54,13 +61,14 @@ struct PersonalLLMApp: App {
         // Initialize LLM based on what we found
         if let modelPath = modelPath {
             llm = LlamaCppLLM()
-            print("✅ Using real Phi-3 LLM")
+            print("✅ Using real Phi-3 LLM on device")
             print("   Model path: \(modelPath.path)")
         } else {
             llm = MockLLM(delay: .milliseconds(50))
             print("⚠️  Phi-3 model not found")
             print("⚠️  Using MockLLM instead")
         }
+        #endif
 
         // Create chunker
         let chunker = SemanticChunker()
@@ -98,16 +106,24 @@ struct PersonalLLMApp: App {
         // Load model on startup
         Task {
             do {
+                #if targetEnvironment(simulator)
+                // In simulator, always use MockLLM
+                let mockModelURL = URL(fileURLWithPath: "/mock/model/phi3-mini")
+                try await llm.load(modelPath: mockModelURL, config: .phi3Mini)
+                print("✅ MockLLM ready (simulator mode)")
+                #else
+                // On device, load real model if available
                 if let modelPath = modelPath {
                     // Load real model
                     try await llm.load(modelPath: modelPath, config: .phi3Mini)
-                    print("✅ Phi-3 model loaded successfully")
+                    print("✅ Phi-3 model loaded successfully on device")
                 } else {
-                    // Load mock model
+                    // Load mock model as fallback
                     let mockModelURL = URL(fileURLWithPath: "/mock/model/phi3-mini")
                     try await llm.load(modelPath: mockModelURL, config: .phi3Mini)
-                    print("✅ MockLLM ready")
+                    print("✅ MockLLM ready (fallback)")
                 }
+                #endif
             } catch {
                 print("❌ Failed to load LLM: \(error)")
             }
