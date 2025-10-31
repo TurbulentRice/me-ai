@@ -16,9 +16,12 @@ struct PersonalLLMApp: App {
 
         // Create embedder - try real model, fall back to mock
         let embedder: Embedder
-        if let modelURL = Bundle.main.url(forResource: "embeddings", withExtension: "mlpackage") {
+        // Look for compiled .mlmodelc (preferred) or uncompiled .mlpackage
+        if let modelURL = Bundle.main.url(forResource: "embeddings", withExtension: "mlmodelc") ??
+                          Bundle.main.url(forResource: "embeddings", withExtension: "mlpackage") {
             embedder = LocalEmbedder(modelPath: modelURL, dimension: 384, maxLength: 128)
             print("✅ Using real CoreML embedder")
+            print("   Model: \(modelURL.lastPathComponent)")
         } else {
             embedder = MockEmbedder(dimension: 384, maxLength: 512, deterministicMode: true)
             print("⚠️  CoreML model not found, using MockEmbedder")

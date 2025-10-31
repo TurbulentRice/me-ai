@@ -16,17 +16,17 @@ targets:
     sources:
       - App/PersonalLLM
     preBuildScripts:
-      - name: "Copy Models to Bundle"
+      - name: "Compile and Copy Models"
         script: |
-          # Copy embeddings model
-          echo "Copying embeddings model..."
-          cp -R "${PROJECT_DIR}/Models/Embeddings/embeddings.mlpackage" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/" || true
+          # Compile CoreML model
+          echo "Compiling embeddings model..."
+          xcrun coremlcompiler compile "${PROJECT_DIR}/Models/Embeddings/embeddings.mlpackage" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/"
 
           # Copy LLM model
           echo "Copying Phi-3 model..."
           cp "${PROJECT_DIR}/Models/Phi3Mini/phi3-mini-128k-q4.gguf" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/" || true
 
-          echo "Models copied to app bundle"
+          echo "Models compiled and copied to app bundle"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.seanrussell.personalllm
