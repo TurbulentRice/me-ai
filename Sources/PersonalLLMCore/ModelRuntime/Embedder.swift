@@ -263,16 +263,35 @@ public final class LocalEmbedder: Embedder {
         // Run inference
         let output = try await model.prediction(from: inputFeatures)
 
-        // Extract the last_hidden_state output
-        guard let outputFeature = output.featureValue(for: "var_2815"),
-              let outputArray = outputFeature.multiArrayValue else {
-            throw EmbeddingError.embeddingFailed("Failed to extract model output")
+        // Extract the output - try common output names
+        var outputArray: MLMultiArray?
+        let possibleOutputNames = [
+            "var_2815",           // Original conversion name
+            "last_hidden_state",  // Common name
+            "output",             // Generic name
+            "embeddings"          // Alternative name
+        ]
+
+        // Try each possible output name
+        for name in possibleOutputNames {
+            if let feature = output.featureValue(for: name),
+               let array = feature.multiArrayValue {
+                outputArray = array
+                print("✅ Found model output: \(name)")
+                break
+            }
+        }
+
+        // If none worked, list all available outputs for debugging
+        guard let finalOutputArray = outputArray else {
+            let availableOutputs = output.featureNames.joined(separator: ", ")
+            throw EmbeddingError.embeddingFailed("Failed to extract model output. Available outputs: \(availableOutputs)")
         }
 
         // Perform mean pooling over the sequence dimension
         // Output shape: [1, max_length, hidden_size] -> [hidden_size]
         let embedding = try meanPooling(
-            hiddenStates: outputArray,
+            hiddenStates: finalOutputArray,
             attentionMask: attentionMask
         )
 
