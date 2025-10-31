@@ -14,8 +14,15 @@ struct PersonalLLMApp: App {
         // Create database
         let database = try! SQLiteVectorDB(dbPath: dbURL)
 
-        // Create embedder
-        let embedder = MockEmbedder(dimension: 384, maxLength: 512, deterministicMode: true)
+        // Create embedder - try real model, fall back to mock
+        let embedder: Embedder
+        if let modelURL = Bundle.main.url(forResource: "embeddings", withExtension: "mlpackage") {
+            embedder = LocalEmbedder(modelPath: modelURL, dimension: 384, maxLength: 128)
+            print("✅ Using real CoreML embedder")
+        } else {
+            embedder = MockEmbedder(dimension: 384, maxLength: 512, deterministicMode: true)
+            print("⚠️  CoreML model not found, using MockEmbedder")
+        }
 
         // Create LLM
         let llm = MockLLM(delay: .milliseconds(50))

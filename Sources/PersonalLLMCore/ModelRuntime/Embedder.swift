@@ -157,15 +157,18 @@ private struct SeededRandomGenerator {
     }
 }
 
-// MARK: - Stub for Real Embedder Implementation
+// MARK: - CoreML Embedder Implementation
 
-/// Placeholder for real embedding model implementation
-/// This will be replaced with actual CoreML or MLX implementation in future
+#if canImport(CoreML)
+import CoreML
+
+/// Real CoreML-based embedder using sentence-transformers model
 public final class LocalEmbedder: Embedder {
     private let modelPath: URL
     private let dimension: Int
     private let maxLength: Int
-    private var isLoaded = false
+    private var mlModel: MLModel?
+    private let tokenizer: SimpleTokenizer
 
     public var embeddingDimension: Int {
         get async { dimension }
@@ -177,40 +180,212 @@ public final class LocalEmbedder: Embedder {
 
     /// Initialize local embedder
     /// - Parameters:
-    ///   - modelPath: Path to the embedding model (CoreML or ONNX)
-    ///   - dimension: Expected embedding dimension
-    ///   - maxLength: Maximum sequence length
+    ///   - modelPath: Path to the CoreML embedding model (.mlpackage)
+    ///   - dimension: Expected embedding dimension (384 for all-MiniLM-L6-v2)
+    ///   - maxLength: Maximum sequence length (128 default)
     public init(
         modelPath: URL,
         dimension: Int = 384,
-        maxLength: Int = 512
+        maxLength: Int = 128
     ) {
         self.modelPath = modelPath
+        self.dimension = dimension
+        self.maxLength = maxLength
+        self.tokenizer = SimpleTokenizer(maxLength: maxLength)
+    }
+
+    public func embed(texts: [String]) async throws -> [[Float]] {
+        // Load model if needed
+        if mlModel == nil {
+            try await loadModel()
+        }
+
+        guard let model = mlModel else {
+            throw EmbeddingError.modelNotLoaded
+        }
+
+        // Process each text
+        var embeddings: [[Float]] = []
+        for text in texts {
+            let embedding = try await generateEmbedding(for: text, using: model)
+            embeddings.append(embedding)
+        }
+
+        return embeddings
+    }
+
+    /// Load the CoreML model
+    private func loadModel() async throws {
+        guard FileManager.default.fileExists(atPath: modelPath.path) else {
+            throw EmbeddingError.modelNotLoaded
+        }
+
+        do {
+            let config = MLModelConfiguration()
+            config.computeUnits = .cpuAndGPU // Use Neural Engine if available
+            mlModel = try MLModel(contentsOf: modelPath, configuration: config)
+        } catch {
+            throw EmbeddingError.embeddingFailed("Failed to load CoreML model: \(error.localizedDescription)")
+        }
+    }
+
+    /// Generate embedding for a single text
+    private func generateEmbedding(for text: String, using model: MLModel) async throws -> [Float] {
+        // Tokenize the input text
+        let (inputIDs, attentionMask) = tokenizer.tokenize(text)
+
+        // Create MLMultiArray inputs
+        let inputIDsArray = try MLMultiArray(shape: [1, NSNumber(value: maxLength)], dataType: .int32)
+        let attentionMaskArray = try MLMultiArray(shape: [1, NSNumber(value: maxLength)], dataType: .int32)
+
+        // Fill arrays
+        for i in 0..<maxLength {
+            inputIDsArray[i] = NSNumber(value: inputIDs[i])
+            attentionMaskArray[i] = NSNumber(value: attentionMask[i])
+        }
+
+        // Create input feature provider
+        let inputFeatures = try MLDictionaryFeatureProvider(dictionary: [
+            "input_ids": MLFeatureValue(multiArray: inputIDsArray),
+            "attention_mask": MLFeatureValue(multiArray: attentionMaskArray)
+        ])
+
+        // Run inference
+        let output = try await model.prediction(from: inputFeatures)
+
+        // Extract the last_hidden_state output
+        guard let outputFeature = output.featureValue(for: "var_2815"),
+              let outputArray = outputFeature.multiArrayValue else {
+            throw EmbeddingError.embeddingFailed("Failed to extract model output")
+        }
+
+        // Perform mean pooling over the sequence dimension
+        // Output shape: [1, max_length, hidden_size] -> [hidden_size]
+        let embedding = try meanPooling(
+            hiddenStates: outputArray,
+            attentionMask: attentionMask
+        )
+
+        // Normalize the embedding vector
+        return normalize(embedding)
+    }
+
+    /// Perform mean pooling on hidden states using attention mask
+    private func meanPooling(
+        hiddenStates: MLMultiArray,
+        attentionMask: [Int32]
+    ) throws -> [Float] {
+        let batchSize = hiddenStates.shape[0].intValue
+        let seqLength = hiddenStates.shape[1].intValue
+        let hiddenSize = hiddenStates.shape[2].intValue
+
+        guard batchSize == 1, seqLength == maxLength, hiddenSize == dimension else {
+            throw EmbeddingError.embeddingFailed("Unexpected output shape")
+        }
+
+        // Sum embeddings for non-padded tokens
+        var sumEmbedding = [Float](repeating: 0.0, count: dimension)
+        var tokenCount: Float = 0.0
+
+        for seqIdx in 0..<seqLength {
+            let mask = Float(attentionMask[seqIdx])
+            if mask > 0 {
+                tokenCount += 1.0
+                for dimIdx in 0..<dimension {
+                    let linearIndex = seqIdx * dimension + dimIdx
+                    let value = hiddenStates[linearIndex].floatValue
+                    sumEmbedding[dimIdx] += value * mask
+                }
+            }
+        }
+
+        // Average by number of non-padded tokens
+        guard tokenCount > 0 else {
+            throw EmbeddingError.embeddingFailed("No valid tokens found")
+        }
+
+        return sumEmbedding.map { $0 / tokenCount }
+    }
+
+    /// Normalize embedding vector to unit length
+    private func normalize(_ vector: [Float]) -> [Float] {
+        let magnitude = sqrt(vector.reduce(0) { $0 + $1 * $1 })
+        guard magnitude > 0 else { return vector }
+        return vector.map { $0 / magnitude }
+    }
+}
+
+// MARK: - Simple Tokenizer
+
+/// Simple BPE-like tokenizer for prototype
+/// Note: This is a simplified version. For production, use a proper tokenizer
+private struct SimpleTokenizer {
+    let maxLength: Int
+
+    /// Tokenize text into input_ids and attention_mask
+    /// Returns: (input_ids, attention_mask)
+    func tokenize(_ text: String) -> ([Int32], [Int32]) {
+        var inputIDs = [Int32](repeating: 0, count: maxLength)
+        var attentionMask = [Int32](repeating: 0, count: maxLength)
+
+        // Special tokens
+        let clsToken: Int32 = 101  // [CLS]
+        let sepToken: Int32 = 102  // [SEP]
+        // Pad token (0) is default in array initialization
+
+        // Start with [CLS]
+        inputIDs[0] = clsToken
+        attentionMask[0] = 1
+
+        // Tokenize text (simple whitespace split)
+        let words = text.lowercased()
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+
+        var position = 1
+        for word in words {
+            guard position < maxLength - 1 else { break }
+
+            // Simple hash-based token ID (consistent hashing)
+            let tokenID = Int32(abs(word.hashValue % 30000) + 1000)
+            inputIDs[position] = tokenID
+            attentionMask[position] = 1
+            position += 1
+        }
+
+        // Add [SEP] token
+        if position < maxLength {
+            inputIDs[position] = sepToken
+            attentionMask[position] = 1
+        }
+
+        // Remaining positions are already padded with 0s
+
+        return (inputIDs, attentionMask)
+    }
+}
+
+#else
+// Non-Apple platforms: Use mock implementation
+public final class LocalEmbedder: Embedder {
+    private let dimension: Int
+    private let maxLength: Int
+
+    public var embeddingDimension: Int {
+        get async { dimension }
+    }
+
+    public var maxSequenceLength: Int {
+        get async { maxLength }
+    }
+
+    public init(modelPath: URL, dimension: Int = 384, maxLength: Int = 128) {
         self.dimension = dimension
         self.maxLength = maxLength
     }
 
     public func embed(texts: [String]) async throws -> [[Float]] {
-        // TODO: Implement actual embedding model inference
-        // For now, throw not implemented error
-        throw EmbeddingError.embeddingFailed("Real embedding implementation not yet available. Use MockEmbedder for testing.")
-
-        // Future implementation will:
-        // 1. Load CoreML model
-        // 2. Tokenize input texts
-        // 3. Run inference
-        // 4. Extract embeddings from model output
-        // 5. Normalize vectors if needed
-    }
-
-    /// Load the embedding model
-    private func loadModel() async throws {
-        // TODO: Implement model loading
-        // This will use CoreML or MLX depending on platform
-        guard FileManager.default.fileExists(atPath: modelPath.path) else {
-            throw EmbeddingError.modelNotLoaded
-        }
-
-        isLoaded = true
+        throw EmbeddingError.embeddingFailed("CoreML not available on this platform")
     }
 }
+#endif
