@@ -15,8 +15,18 @@ targets:
     deploymentTarget: "18.0"
     sources:
       - App/PersonalLLM
-    resources:
-      - Models/Embeddings/embeddings.mlpackage
+    preBuildScripts:
+      - name: "Copy Models to Bundle"
+        script: |
+          # Copy embeddings model
+          echo "Copying embeddings model..."
+          cp -R "${PROJECT_DIR}/Models/Embeddings/embeddings.mlpackage" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/" || true
+
+          # Copy LLM model
+          echo "Copying Phi-3 model..."
+          cp "${PROJECT_DIR}/Models/Phi3Mini/phi3-mini-128k-q4.gguf" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/" || true
+
+          echo "Models copied to app bundle"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.seanrussell.personalllm
@@ -39,6 +49,9 @@ targets:
     platform: iOS
     sources:
       - Tests/PersonalLLMCoreTests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: PersonalLLM
       - package: PersonalLLMCore

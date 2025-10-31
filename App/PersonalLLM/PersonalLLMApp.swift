@@ -24,24 +24,38 @@ struct PersonalLLMApp: App {
             print("⚠️  CoreML model not found, using MockEmbedder")
         }
 
-        // Create LLM - try real model, fall back to mock
+        // Create LLM - try bundled model first, then Documents, fall back to mock
         let llm: LocalLLM
-        let modelsDir = FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .appendingPathComponent("Models")
-        let modelPath = modelsDir
-            .appendingPathComponent("Phi3Mini")
-            .appendingPathComponent("phi3-mini-128k-q4.gguf")
+        var modelPath: URL?
 
-        if FileManager.default.fileExists(atPath: modelPath.path) {
+        // Try to find the model in this order:
+        // 1. Bundled with app (for production)
+        if let bundledModelPath = Bundle.main.url(forResource: "phi3-mini-128k-q4", withExtension: "gguf") {
+            modelPath = bundledModelPath
+            print("✅ Found bundled Phi-3 model")
+        }
+        // 2. In development Models directory (for development)
+        else {
+            let devModelsPath = FileManager.default
+                .urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .deletingLastPathComponent()
+                .deletingLastPathComponent()
+                .appendingPathComponent("Models/Phi3Mini/phi3-mini-128k-q4.gguf")
+
+            if FileManager.default.fileExists(atPath: devModelsPath.path) {
+                modelPath = devModelsPath
+                print("✅ Found development Phi-3 model")
+            }
+        }
+
+        // Initialize LLM based on what we found
+        if let modelPath = modelPath {
             llm = LlamaCppLLM()
             print("✅ Using real Phi-3 LLM")
             print("   Model path: \(modelPath.path)")
         } else {
             llm = MockLLM(delay: .milliseconds(50))
-            print("⚠️  Phi-3 model not found at \(modelPath.path)")
+            print("⚠️  Phi-3 model not found")
             print("⚠️  Using MockLLM instead")
         }
 
@@ -81,7 +95,7 @@ struct PersonalLLMApp: App {
         // Load model on startup
         Task {
             do {
-                if FileManager.default.fileExists(atPath: modelPath.path) {
+                if let modelPath = modelPath {
                     // Load real model
                     try await llm.load(modelPath: modelPath, config: .phi3Mini)
                     print("✅ Phi-3 model loaded successfully")
