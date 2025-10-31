@@ -64,6 +64,8 @@ schemes:
         PersonalLLM: all
     run:
       config: Debug
+      environmentVariables:
+        IDEPreferLogStreaming: "YES"
     test:
       config: Debug
       targets:
