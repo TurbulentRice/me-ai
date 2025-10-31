@@ -10,9 +10,17 @@ echo "Personal AI - Model Download Script"
 echo "======================================"
 echo ""
 
+# Activate virtual environment if it exists
+if [ -f "venv/bin/activate" ]; then
+    echo "🐍 Activating Python virtual environment..."
+    source venv/bin/activate
+elif [ -f "../venv/bin/activate" ]; then
+    source ../venv/bin/activate
+fi
+
 # Check if huggingface-cli is available
 if ! command -v huggingface-cli &> /dev/null; then
-    echo "⚠️  huggingface-cli not found. Installing..."
+    echo "⚠️  huggingface-cli not found. Installing in venv..."
     pip install -U "huggingface_hub[cli]"
 fi
 
