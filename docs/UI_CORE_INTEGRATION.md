@@ -1,7 +1,8 @@
 # UI-Core Integration & MVP Implementation Plan
 
 **Created**: 2025-10-30
-**Status**: Planning
+**Updated**: 2025-10-30
+**Status**: Phase MVP-1 Complete
 **Goal**: Integrate SwiftUI UI with PersonalLLMCore and deploy real models for MVP
 
 ## Overview
@@ -18,7 +19,6 @@ This document outlines the phased approach to integrate the existing SwiftUI int
 - **Models Downloaded**: Phi-3 Mini and embedding models in `Models/` directory
 
 ### ⚠️ What Needs Work
-- **Model Files**: Phi-3 Mini appears incomplete (only 29 bytes)
 - **Mock Implementations**: App using MockLLM and MockEmbedder
 - **ViewModel APIs**: Need alignment with actual PersonalLLMCore APIs
 - **Real Model Integration**: MLC-LLM runtime not yet integrated
@@ -27,8 +27,10 @@ This document outlines the phased approach to integrate the existing SwiftUI int
 
 ### 📊 Model Status
 ```bash
-Models/Phi3Mini/Phi-3-mini-128k-instruct-q4.gguf: 29 bytes ❌ (incomplete)
-Models/Embeddings/pytorch_model.bin: 90.8 MB ✅ (looks valid)
+Models/Phi3Mini/phi3-mini-128k-q4.gguf: 2.2 GB ✅ (verified GGUF format)
+Models/Embeddings/pytorch_model.bin: 87 MB ✅ (valid)
+Models/Embeddings/config.json: 612 B ✅ (valid JSON)
+Models/Embeddings/tokenizer files: All present ✅
 ```
 
 ## Implementation Strategy
@@ -126,10 +128,14 @@ echo "Model download complete!"
 **Commit**: `git commit -m "Fix and verify model downloads"`
 
 ### Definition of Done
-- [x] Phi-3 Mini model is 2-3 GB
-- [x] Embedding model files are complete
-- [x] Download script updated and tested
-- [x] Models directory structure verified
+- [x] Phi-3 Mini model is 2-3 GB ✅
+- [x] Embedding model files are complete ✅
+- [x] Download script updated and tested ✅
+- [x] Models directory structure verified ✅
+
+**Status**: ✅ Complete (2025-10-30)
+
+**Summary**: Successfully downloaded Phi-3.1-mini-128k-instruct-Q4_K_M (2.2GB) from bartowski's trusted GGUF conversion and all-MiniLM-L6-v2 embedding model (87MB + config files). Updated download script to use HuggingFace Hub CLI (`hf download`) and verified GGUF file integrity via magic bytes. All model files are properly downloaded and ready for integration.
 
 ---
 

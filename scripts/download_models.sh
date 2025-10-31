@@ -10,19 +10,18 @@ echo "Personal AI - Model Download Script"
 echo "======================================"
 echo ""
 
-# Activate virtual environment if it exists
-if [ -f "venv/bin/activate" ]; then
-    echo "🐍 Activating Python virtual environment..."
-    source venv/bin/activate
-elif [ -f "../venv/bin/activate" ]; then
-    source ../venv/bin/activate
+# Ensure ~/.local/bin is in PATH (for pipx installations)
+export PATH="$HOME/.local/bin:$PATH"
+
+# Check if hf CLI is available
+if ! command -v hf &> /dev/null; then
+    echo "⚠️  HuggingFace Hub CLI (hf) not found."
+    echo "   Please install with: pipx install 'huggingface_hub[cli]'"
+    echo "   Or: pip install --user 'huggingface_hub[cli]'"
+    exit 1
 fi
 
-# Check if huggingface-cli is available
-if ! command -v huggingface-cli &> /dev/null; then
-    echo "⚠️  huggingface-cli not found. Installing in venv..."
-    pip install -U "huggingface_hub[cli]"
-fi
+echo "✅ Found HuggingFace Hub CLI: $(which hf)"
 
 echo "📦 Downloading Phi-3-mini-128k-instruct (Q4_K_M quantization)..."
 echo "   Using bartowski's trusted GGUF conversion"
@@ -30,10 +29,9 @@ cd "$MODEL_DIR/Phi3Mini"
 
 # Using bartowski's Phi-3.1-mini which is the updated version
 # Q4_K_M is a good balance of size (~2.4GB) and quality
-huggingface-cli download bartowski/Phi-3.1-mini-128k-instruct-GGUF \
-  --include "Phi-3.1-mini-128k-instruct-Q4_K_M.gguf" \
-  --local-dir . \
-  --local-dir-use-symlinks False
+hf download bartowski/Phi-3.1-mini-128k-instruct-GGUF \
+  Phi-3.1-mini-128k-instruct-Q4_K_M.gguf \
+  --local-dir .
 
 # Rename to simpler name
 if [ -f "Phi-3.1-mini-128k-instruct-Q4_K_M.gguf" ]; then
