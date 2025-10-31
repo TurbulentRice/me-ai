@@ -222,7 +222,17 @@ public final class LocalEmbedder: Embedder {
 
         do {
             let config = MLModelConfiguration()
-            config.computeUnits = .cpuAndGPU // Use Neural Engine if available
+
+            // Use CPU-only in simulator (Metal not fully supported)
+            // Use Neural Engine on device for best performance
+            #if targetEnvironment(simulator)
+            config.computeUnits = .cpuOnly
+            print("📱 Simulator detected: Using CPU-only compute units for embeddings")
+            #else
+            config.computeUnits = .cpuAndNeuralEngine
+            print("📱 Device detected: Using Neural Engine for embeddings")
+            #endif
+
             mlModel = try MLModel(contentsOf: modelPath, configuration: config)
         } catch {
             throw EmbeddingError.embeddingFailed("Failed to load CoreML model: \(error.localizedDescription)")
