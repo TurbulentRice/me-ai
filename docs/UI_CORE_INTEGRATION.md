@@ -1,9 +1,11 @@
 # UI-Core Integration & MVP Implementation Plan
 
 **Created**: 2025-10-30
-**Updated**: 2025-10-30
-**Status**: Phase MVP-2 Complete, MVP-3 In Progress (60%)
+**Updated**: 2025-10-31
+**Status**: Phase MVP-3 Complete ✅ (Using llama.cpp via SwiftLlama)
 **Goal**: Integrate SwiftUI UI with PersonalLLMCore and deploy real models for MVP
+
+**Note**: Phase MVP-3 was completed using **llama.cpp + SwiftLlama** instead of MLC-LLM due to better GGUF support and simpler integration. See [PHASE_MVP3_COMPLETION_GUIDE.md](PHASE_MVP3_COMPLETION_GUIDE.md) for implementation details.
 
 ## Overview
 

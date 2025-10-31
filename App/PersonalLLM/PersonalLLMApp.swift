@@ -24,8 +24,26 @@ struct PersonalLLMApp: App {
             print("⚠️  CoreML model not found, using MockEmbedder")
         }
 
-        // Create LLM
-        let llm = MockLLM(delay: .milliseconds(50))
+        // Create LLM - try real model, fall back to mock
+        let llm: LocalLLM
+        let modelsDir = FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Models")
+        let modelPath = modelsDir
+            .appendingPathComponent("Phi3Mini")
+            .appendingPathComponent("phi3-mini-128k-q4.gguf")
+
+        if FileManager.default.fileExists(atPath: modelPath.path) {
+            llm = LlamaCppLLM()
+            print("✅ Using real Phi-3 LLM")
+            print("   Model path: \(modelPath.path)")
+        } else {
+            llm = MockLLM(delay: .milliseconds(50))
+            print("⚠️  Phi-3 model not found at \(modelPath.path)")
+            print("⚠️  Using MockLLM instead")
+        }
 
         // Create chunker
         let chunker = SemanticChunker()
@@ -62,8 +80,20 @@ struct PersonalLLMApp: App {
 
         // Load model on startup
         Task {
-            let modelURL = URL(fileURLWithPath: "/mock/model/phi3-mini")
-            try? await llm.load(modelPath: modelURL, config: .phi3Mini)
+            do {
+                if FileManager.default.fileExists(atPath: modelPath.path) {
+                    // Load real model
+                    try await llm.load(modelPath: modelPath, config: .phi3Mini)
+                    print("✅ Phi-3 model loaded successfully")
+                } else {
+                    // Load mock model
+                    let mockModelURL = URL(fileURLWithPath: "/mock/model/phi3-mini")
+                    try await llm.load(modelPath: mockModelURL, config: .phi3Mini)
+                    print("✅ MockLLM ready")
+                }
+            } catch {
+                print("❌ Failed to load LLM: \(error)")
+            }
         }
     }
 

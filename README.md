@@ -197,12 +197,13 @@ personal-ai/
   - Integrated with app (graceful fallback to MockEmbedder)
   - App builds and runs with real embeddings
   - All tests passing ✅
-- 🚧 **Phase MVP-3**: LLM Integration (60% complete)
-  - Research complete (llama.cpp + SwiftLlama selected)
+- ✅ **Phase MVP-3**: LLM Integration (COMPLETE)
+  - Integrated llama.cpp via SwiftLlama wrapper
   - Chose llama.cpp over MLC-LLM for direct GGUF support
-  - Implementation guide created (350+ lines)
-  - 3-4 hours remaining for implementation
-  - See [PHASE_MVP3_COMPLETION_GUIDE.md](docs/PHASE_MVP3_COMPLETION_GUIDE.md)
+  - Phi-3.1-mini-128k-Q4_K_M model loaded with Metal acceleration
+  - Real LLM available with graceful MockLLM fallback
+  - Unit tests passing (initialization, loading, state management)
+  - App builds and runs with real on-device inference
 - ⏳ **Phase MVP-4**: ViewModel & UI Polish
   - Connect RAG engine to SwiftUI
   - Implement real-time streaming UI

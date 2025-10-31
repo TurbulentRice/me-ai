@@ -2,7 +2,7 @@ name: PersonalLLM
 options:
   bundleIdPrefix: com.seanrussell
   deploymentTarget:
-    iOS: 17.0
+    iOS: 18.0
 
 packages:
   PersonalLLMCore:
@@ -12,7 +12,7 @@ targets:
   PersonalLLM:
     type: application
     platform: iOS
-    deploymentTarget: "17.0"
+    deploymentTarget: "18.0"
     sources:
       - App/PersonalLLM
     resources:
@@ -24,7 +24,7 @@ targets:
         DEVELOPMENT_TEAM: "" # Set your team ID here when needed
         CODE_SIGN_STYLE: Automatic
         TARGETED_DEVICE_FAMILY: "1,2" # iPhone and iPad
-        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        IPHONEOS_DEPLOYMENT_TARGET: "18.0"
         SWIFT_VERSION: "5.9"
         ENABLE_PREVIEWS: YES
     dependencies:
